@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <link href="styles/style.css" rel="stylesheet">
+</head>
+
+<body>
+    <label for="grocery-item">Enter the grocery item to add or delete:</label>
+    <input type="text" name="user-input" id="grocery-item" onkeydown="return event.key !='Enter';">
+
+    <h1> </h1>
+
+    <input type="submit" value="Add" id="add-button">
+    
+    <h1>Grocery List</h1>
+
+    <ul id="my-ul"></ul>  
+
+</body>
+<script src="scripts/main.js"></script>
+</html>
