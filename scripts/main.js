@@ -1,4 +1,5 @@
 (function(){
+    "use strict";
     //Grabs the Add button.
     const addButton = document.getElementById('add-button');
     
