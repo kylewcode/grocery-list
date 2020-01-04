@@ -1,3 +1,0 @@
-[submodule "hunspell"]
-	path = hunspell
-	url = https://github.com/wulf/hunspell-distributed.git
