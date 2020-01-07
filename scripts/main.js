@@ -6,11 +6,13 @@
     //Creates and displays list item.
     addButton.addEventListener('click', () => {
         const li = document.createElement('li');
+        li.setAttribute('class', 'list-group-item');
         const groceryItem = document.getElementById('grocery-item').value;
         const text = document.createElement('span');
-        const textClass = document.createAttribute('class');
+        /*const textClass = document.createAttribute('class');
         textClass.value = 'text-element';
-        text.setAttributeNode(textClass);
+        text.setAttributeNode(textClass);*/
+        text.setAttribute('class', 'text-element');
         const textContent = document.createTextNode(`${groceryItem}`)
         text.appendChild(textContent);
         li.appendChild(text);
@@ -66,7 +68,7 @@
         
         //Creates the quantity input for grocery item.
         const quantity = document.createElement('input');
-        quantity.setAttribute('class', 'quantity');
+        quantity.setAttribute('class', 'quantity ml-3');
         quantity.setAttribute('type', 'number');
         quantity.setAttribute('step', '1');
         quantity.setAttribute('min', '0');
@@ -75,17 +77,18 @@
         //Creates the X box and attaches it to the list item. (EDIT: The span will now need to be a child of 
         //the number input for quantity of grocery item.
         const span = document.createElement('span');
-        const txt = document.createTextNode(' X');
-        span.className = 'close';
+        span.setAttribute('class', 'close-button close border border-dark rounded');
+        const txt = document.createTextNode('X');
+        //span.className = 'close';
         span.appendChild(txt);
         li.appendChild(span);
         
         //Makes X box click to remove the list item.
-        let close = document.getElementsByClassName('close');
+        let closeBtn = document.getElementsByClassName('close-button');
         
-        for (let i = 0; i < close.length; i++) {
-            close[i].onclick = () => {
-                let x = close[i].parentNode;
+        for (let i = 0; i < closeBtn.length; i++) {
+            closeBtn[i].onclick = () => {
+                let x = closeBtn[i].parentNode;
                 x.style.display = 'none';
             }
         }
