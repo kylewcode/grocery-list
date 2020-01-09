@@ -72,6 +72,7 @@
                     const newItem = document.createElement('span');
                     newItem.textContent = userInput;
                     li.firstChild.before(newItem);
+                    updateItems(newItem, li);
                 };
             });
         });
