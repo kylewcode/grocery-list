@@ -9,19 +9,21 @@
     };
     inputInit();
     
-    //Add listener to main input
-    
-    //Add Grocery Item Name
+    //Initiate adding grocery item on click.
     function addItems(addButton, userInput){
         addButton.addEventListener('click', () => {
+            const div = document.createElement('div');
+            div.setAttribute('class', 'row');
             const li = document.createElement('li');
             li.setAttribute('class', 'list-group-item');
-            const groceryItem = document.getElementById('grocery-item').value;
+            const groceryItem = userInput.value;
+            userInput.value = '';
             const text = document.createElement('span');
             setAttributes(text, {'class': 'text-element', 'spellcheck': 'true', 'autocomplete': 'on'});
             const textContent = document.createTextNode(`${groceryItem}`);
             text.appendChild(textContent);
-            li.appendChild(text);
+            div.appendChild(text)
+            li.appendChild(div);
             
             if (groceryItem === '') {
                 alert('Enter a grocery item.');
@@ -36,14 +38,18 @@
 
         userInput.addEventListener('keyup', (event) => {
             if (event.key === 'Enter'){
+                const div = document.createElement('div');
+                div.setAttribute('class', 'row');
                 const li = document.createElement('li');
                 li.setAttribute('class', 'list-group-item');
-                const groceryItem = document.getElementById('grocery-item').value;
+                const groceryItem = userInput.value;
+                userInput.value = '';
                 const text = document.createElement('span');
                 setAttributes(text, {'class': 'text-element', 'spellcheck': 'true', 'autocomplete': 'on'});
                 const textContent = document.createTextNode(`${groceryItem}`);
                 text.appendChild(textContent);
-                li.appendChild(text);
+                div.appendChild(text)
+                li.appendChild(div);
                 
                 if (groceryItem === '') {
                     alert('Enter a grocery item.');
@@ -57,6 +63,8 @@
             };
         });
     };
+
+    //Creates grocery item text.
     
     //Update Items
     function updateItems(itemSpan, li){
@@ -78,18 +86,12 @@
         });
     };
     
-    //Add quantity input. Dependencies - parent <li>
+    //Add quantity input. Dependencies - parent <li>, <div> row.
     function addQuantity(li) {
         const quantity = document.createElement('input');
-        setAttributes(quantity, {'class': 'quantity ml-3', 'type' :'number', 'step':'1', 'min':'0'});
+        setAttributes(quantity, 
+            {'class': 'quantity ml-3', 'type': 'number', 'step': '1', 'min': '0'});
         li.appendChild(quantity);
-    };
-    
-    //Helper function to set multiple attributes to an element.
-    function setAttributes(element, attributes) {
-        for(let key in attributes) {
-            element.setAttribute(key, attributes[key]);
-        }
     };
     
     //Remove Items. Dependencies - parent quantity input.
@@ -103,6 +105,20 @@
         li.appendChild(bttn);
         bttn.addEventListener('click', () => {
             li.remove();
+        });
+    };
+
+    //Helper function to set multiple attributes to an element.
+    function setAttributes(element, attributes) {
+        for(let key in attributes) {
+            element.setAttribute(key, attributes[key]);
+        }
+    };
+
+    //Helper function that appends multiple children to a single parent.
+    function appendChildren(parent, children){
+        children.forEach(child => {
+            parent.appendChild(child);
         });
     };
     
