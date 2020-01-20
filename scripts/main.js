@@ -1,21 +1,42 @@
 (function(){
     "use strict";
-    //Grabs the Add button.
-    const addButton = document.getElementById('add-button');
+    //Initializes the add button's functionality.
+    function inputInit(){
+        const addButton = document.getElementById('add-button');
+        const userInput = document.getElementById('grocery-item');
+        setAttributes(userInput, {'spellcheck': 'true', 'autocomplete': 'on'});
+        addItems(addButton, userInput);
+    };
+    inputInit();
     
-    //Creates and displays list item.
-    addButton.addEventListener('click', () => {
+    //Activates with button or Enter key.
+    function addItems(addButton, userInput){
+        addButton.addEventListener('click', () => {
+            createItems(userInput);
+        });
+        userInput.addEventListener('keyup', (event) => {
+            if (event.key === 'Enter'){
+                createItems(userInput);
+            };
+        });
+    };
+    
+    //Creates grocery item.
+    function createItems(userInput){
+        const div = document.createElement('div');
+        div.setAttribute('class', 'row');
         const li = document.createElement('li');
         li.setAttribute('class', 'list-group-item');
-        const groceryItem = document.getElementById('grocery-item').value;
+        const groceryItem = userInput.value;
+        userInput.value = '';
         const text = document.createElement('span');
-        /*const textClass = document.createAttribute('class');
-        textClass.value = 'text-element';
-        text.setAttributeNode(textClass);*/
-        text.setAttribute('class', 'text-element');
-        const textContent = document.createTextNode(`${groceryItem}`)
+        setAttributes(text, {'class': 'text-element', 'spellcheck': 'true', 'autocomplete': 'on'});
+        const textContent = document.createTextNode(`${groceryItem}`);
         text.appendChild(textContent);
-        li.appendChild(text);
+        const columnXS = createColumnXS();
+        columnXS.appendChild(text);
+        div.appendChild(columnXS)
+        li.appendChild(div);
         
         if (groceryItem === '') {
             alert('Enter a grocery item.');
@@ -23,84 +44,83 @@
             document.getElementById('my-ul').appendChild(li);
         }
         
-        //Gets li element items needed for text entry updating.
-        let updatedList = document.getElementsByTagName('li');
-        
-        //Removes old text and replaces it with an empty input.
-        for (let i = 0; i < updatedList.length; i++) {
-            updatedList[i].firstChild.onclick = () => {
-                updatedList[i].removeChild(updatedList[i].firstChild);
-                const newElement = document.createElement('input');
-                const newAttribute = document.createAttribute('type');
-                newAttribute.value = 'text';
-                newElement.setAttributeNode(newAttribute);
-                const newAttribute2 = document.createAttribute('class');
-                newAttribute2.value = 'updated-items';
-                newElement.setAttributeNode(newAttribute2);
-                
-                //Insert the new input element at the beginning of the proper <li> element.
-                updatedList[i].insertBefore(newElement, updatedList[i].firstChild);
-                
-                //Takes input from newly created text inputs and replaces them with updated text.
-                //Creates and updates list of text inputs.
-                const inputList = document.getElementsByClassName('updated-items');
-                console.log(inputList);
-                
-                for (let j = 0; j < inputList.length; j++) {
-                    inputList[j].onkeydown = () => {
-                        if (event.key === 'Enter') {
-                            let updatedVar = inputList[j].value;
-                            inputList[j].parentNode.removeChild(inputList[j]);
-                            const updatedText = document.createElement('span');
-                            const updatedTextClass = document.createAttribute('class');
-                            updatedTextClass.value = 'text-element';
-                            updatedText.setAttributeNode(updatedTextClass);
-                            updatedText.textContent = updatedVar;
-                            updatedList[j].insertBefore(updatedText, updatedList[j].firstChild);
-                        }
-                    }
-                }
-                
-                
-            }
-        }
-        
-        
-        //Creates the quantity input for grocery item.
+        updateItems(text, div, columnXS);
+        addQuantity(div, columnXS);
+        removeItems(li, div);
+    };
+    
+    //Update Items
+    function updateItems(itemSpan, columnXS){
+        itemSpan.addEventListener('click', () => {
+            itemSpan.remove();
+            const input = document.createElement('input');
+            columnXS.firstChild.before(input);
+            input.focus();
+            input.addEventListener('keyup', (event) => {
+                if (event.key === 'Enter') {
+                    const userInput = input.value;
+                    input.remove();
+                    const newItem = document.createElement('span');
+                    newItem.textContent = userInput;
+                    columnXS.firstChild.before(newItem);
+                    updateItems(newItem, columnXS);
+                };
+            });
+        });
+    };
+    
+    //Add quantity input.
+    function addQuantity(div, columnXS) {
         const quantity = document.createElement('input');
-        quantity.setAttribute('class', 'quantity ml-3');
-        quantity.setAttribute('type', 'number');
-        quantity.setAttribute('step', '1');
-        quantity.setAttribute('min', '0');
-        li.appendChild(quantity);
-        
-        //Creates the X box and attaches it to the list item. (EDIT: The span will now need to be a child of 
-        //the number input for quantity of grocery item.
-        const span = document.createElement('span');
-        span.setAttribute('class', 'close-button close border border-dark rounded');
-        const txt = document.createTextNode('X');
-        //span.className = 'close';
-        span.appendChild(txt);
-        li.appendChild(span);
-        
-        //Makes X box click to remove the list item.
-        let closeBtn = document.getElementsByClassName('close-button');
-        
-        for (let i = 0; i < closeBtn.length; i++) {
-            closeBtn[i].onclick = () => {
-                let x = closeBtn[i].parentNode;
-                x.style.display = 'none';
-            }
+        setAttributes(quantity, {'class': 'quantity ml-3', 'type': 'number', 'step': '1', 'min': '0', 'style': "width: 3em"});
+        columnXS.appendChild(quantity);
+        div.appendChild(columnXS);
+    };
+    
+    //Remove Items. Dependencies - parent quantity input.
+    function removeItems(li, div){
+        const bttn = document.createElement('button');
+        setAttributes(bttn, {'class': 'close', 'type': 'button', 'aria-label': "Close"});
+        //const span = document.createElement('span');
+        //span.setAttribute('aria-hidden', 'true');
+        //span.textContent = 'x';
+        //bttn.appendChild(span);
+        bttn.innerText = 'X';
+        const column = createColumn();
+        column.appendChild(bttn);
+        div.appendChild(column);
+        bttn.addEventListener('click', () => {
+            li.remove();
+        });
+    };
+    
+    //Helper function to set multiple attributes to an element.
+    function setAttributes(element, attributes) {
+        for(let key in attributes) {
+            element.setAttribute(key, attributes[key]);
         }
-        
-        //Update existing grocery item names.
-        //const updateList = text + text;
-        
-        //for (let i = 0; i < updateList.length; i++) {
-        //  console.log('updateList loop');
-        //}
-        //console.log(text);
-        
-    });
+    };
+    
+    //Helper function that appends multiple children to a single parent.
+    /*function appendChildren(parent, children){
+        children.forEach(child => {
+            parent.appendChild(child);
+        });
+    };*/
+    
+    //Helper function that creates a bootstrap div column XS
+    function createColumnXS(){
+        const div = document.createElement('div');
+        div.setAttribute('class', 'col-xs-10');
+        return div;
+    }
+
+    //Helper function that creates a bootstrap div column
+    function createColumn(){
+        const div = document.createElement('div');
+        div.setAttribute('class', 'col');
+        return div;
+    }
+    
 })();
 
