@@ -28,7 +28,7 @@
             <div class="row">
                 <div class="col-xs-10">
                     <span class="text-element">${item.name}</span>
-                    <input class="quantity ml-3" type="number" name="${item.id}" step="1" min="0" style="width: 3em">
+                    <input class="quantity ml-3" type="number" value="${item.quantity}" name="${item.id}" step="1" min="0" style="width: 3em">
                 </div>
                 <div class="col">
                     <button class="close" type="button" value="${item.id}" aria-label="Close">X</button>
@@ -41,6 +41,7 @@
 
     // Stores list data to browser
     function mirrorToLocalStorage() {
+        console.log('Mirroring to storage...');
         localStorage.setItem('items', JSON.stringify(items));
     }
 
@@ -64,6 +65,7 @@
         console.log(quantity);
         item.quantity = quantity;
         console.log(item);
+        list.dispatchEvent(new CustomEvent('itemsUpdated'));
     }
     
     // Add event listener to <form> element to listen for submit event
@@ -80,7 +82,15 @@
             deleteItem(id);
         }
         
-        id = parseInt(e.target.name)
+        // id = parseInt(e.target.name)
+        // if(e.target.matches('input[type="number"]')) {
+        //     quantityUpdate(id);
+        // }
+    });
+
+    // Listen for input to quantity input
+    list.addEventListener('input', function(e) {
+        const id = parseInt(e.target.name)
         if(e.target.matches('input[type="number"]')) {
             quantityUpdate(id);
         }
