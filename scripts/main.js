@@ -1,126 +1,141 @@
-(function(){
-    "use strict";
-    //Initializes the add button's functionality.
-    function inputInit(){
-        const addButton = document.getElementById('add-button');
-        const userInput = document.getElementById('grocery-item');
-        setAttributes(userInput, {'spellcheck': 'true', 'autocomplete': 'on'});
-        addItems(addButton, userInput);
-    };
-    inputInit();
-    
-    //Activates with button or Enter key.
-    function addItems(addButton, userInput){
-        addButton.addEventListener('click', () => {
-            createItems(userInput);
-        });
-        userInput.addEventListener('keyup', (event) => {
-            if (event.key === 'Enter'){
-                createItems(userInput);
-            };
-        });
-    };
-    
-    //Creates grocery item.
-    function createItems(userInput){
-        const div = document.createElement('div');
-        div.setAttribute('class', 'row');
-        const li = document.createElement('li');
-        li.setAttribute('class', 'list-group-item');
-        const groceryItem = userInput.value;
-        userInput.value = '';
-        const text = document.createElement('span');
-        setAttributes(text, {'class': 'text-element', 'spellcheck': 'true', 'autocomplete': 'on'});
-        const textContent = document.createTextNode(`${groceryItem}`);
-        text.appendChild(textContent);
-        const columnXS = createColumnXS();
-        columnXS.appendChild(text);
-        div.appendChild(columnXS)
-        li.appendChild(div);
-        
-        if (groceryItem === '') {
-            alert('Enter a grocery item.');
-        } else {
-            document.getElementById('my-ul').appendChild(li);
-        }
-        
-        updateItems(text, div, columnXS);
-        addQuantity(div, columnXS);
-        removeItems(li, div);
-    };
-    
-    //Update Items
-    function updateItems(itemSpan, columnXS){
-        itemSpan.addEventListener('click', () => {
-            itemSpan.remove();
-            const input = document.createElement('input');
-            columnXS.firstChild.before(input);
-            input.focus();
-            input.addEventListener('keyup', (event) => {
-                if (event.key === 'Enter') {
-                    const userInput = input.value;
-                    input.remove();
-                    const newItem = document.createElement('span');
-                    newItem.textContent = userInput;
-                    columnXS.firstChild.before(newItem);
-                    updateItems(newItem, columnXS);
-                };
-            });
-        });
-    };
-    
-    //Add quantity input.
-    function addQuantity(div, columnXS) {
-        const quantity = document.createElement('input');
-        setAttributes(quantity, {'class': 'quantity ml-3', 'type': 'number', 'step': '1', 'min': '0', 'style': "width: 3em"});
-        columnXS.appendChild(quantity);
-        div.appendChild(columnXS);
-    };
-    
-    //Remove Items. Dependencies - parent quantity input.
-    function removeItems(li, div){
-        const bttn = document.createElement('button');
-        setAttributes(bttn, {'class': 'close', 'type': 'button', 'aria-label': "Close"});
-        //const span = document.createElement('span');
-        //span.setAttribute('aria-hidden', 'true');
-        //span.textContent = 'x';
-        //bttn.appendChild(span);
-        bttn.innerText = 'X';
-        const column = createColumn();
-        column.appendChild(bttn);
-        div.appendChild(column);
-        bttn.addEventListener('click', () => {
-            li.remove();
-        });
-    };
-    
-    //Helper function to set multiple attributes to an element.
-    function setAttributes(element, attributes) {
-        for(let key in attributes) {
-            element.setAttribute(key, attributes[key]);
-        }
-    };
-    
-    //Helper function that appends multiple children to a single parent.
-    /*function appendChildren(parent, children){
-        children.forEach(child => {
-            parent.appendChild(child);
-        });
-    };*/
-    
-    //Helper function that creates a bootstrap div column XS
-    function createColumnXS(){
-        const div = document.createElement('div');
-        div.setAttribute('class', 'col-xs-10');
-        return div;
-    }
+import {createItemsRepository} from "./createItemsRepository.mjs";
 
-    //Helper function that creates a bootstrap div column
-    function createColumn(){
-        const div = document.createElement('div');
-        div.setAttribute('class', 'col');
-        return div;
+
+    const itemsRepo = createItemsRepository();
+
+    // --------------Scoped Variables------------
+
+    // Grab <form> and <li> element by class
+    const groceryForm = document.querySelector('.input');
+    const list = document.querySelector('.list-group');
+    
+    // Create variable to store state (items in the grocery list, etc.)
+    let items = [];
+
+
+    // ---------------Functions--------------------
+
+    
+    // Create function to handle form submit event
+    function addItem(e) {
+        e.preventDefault();
+        const name = e.currentTarget.item.value;
+        if(!name) return alert('Please enter something!');
+        itemsRepo.addItem({
+            name,
+            id: Date.now(),
+            quantity: 1,
+            updating: false,
+        });
     }
     
-})();
+    function displayItems() {
+        const html = items.map(item => `
+        <li class="list-group-item">
+        <div class="row">
+        <input class="update-input" ${item.updating === false ? 'style="display: none"' : ''} name="${item.name}">
+        <div class="col-xs-10">
+        <span ${item.updating === true ? 'style="display: none"' : ''} class="text-element">${item.name}</span>
+        <input class="quantity ml-3" type="number" value="${item.quantity}" name="${item.id}" step="1" min="0" style="width: 3em">
+        </div>
+        <div class="col">
+        <button class="close" type="button" value="${item.id}" aria-label="Close">X</button>
+        </div>
+        </div>
+        </li>
+        `).join('');
+        list.innerHTML = html;
+    }
+    
+    // Stores list data to browser
+    function mirrorToLocalStorage() {
+        localStorage.setItem('items', JSON.stringify(items));
+    }
+    
+    // Returns list data from browser
+    function restoreFromLocalStorage() {
+        const lsItems = JSON.parse(localStorage.getItem('items'));
+        if(lsItems) {
+            items.push(...lsItems);
+            list.dispatchEvent(new CustomEvent('itemsUpdated'));
+        }
+    }
+    
+    function deleteItem(id) {
+        items = items.filter(item => item.id !== id);
+        list.dispatchEvent(new CustomEvent('itemsUpdated'));
+    }
+    
+    function quantityUpdate(id) {
+        const item = items.find(item => item.id === id);
+        const quantity = document.querySelector(`input[name="${id}"]`).value;
+        item.quantity = quantity;
+        list.dispatchEvent(new CustomEvent('itemsUpdated'));
+    }
+    
+    function toggleText(name) {
+        // Need specific item updating prop
+        const item = items.find(item => item.name == name);
+        item.updating = !item.updating;
+        list.dispatchEvent(new CustomEvent('itemsUpdated'));
+    }
+    
+    // Remove input element and replace with text element of the inputs value
+    function updateName(text, name) {
+        console.log('Running updateName');
+        const newText = text;
+        const item = items.find(item => item.name == name);
+        
+        function handleEnterKey(e) {
+            console.log('Running handleEnterKey');
+            if(e.key === 'Enter') {
+                console.log('You hit enter');
+                item.updating = !item.updating;
+                list.dispatchEvent(new CustomEvent('itemsUpdated')); 
+            } 
+        }
 
+        list.addEventListener('keyup', handleEnterKey);
+        list.removeEventListener('keyup', handleEnterKey);
+    }
+
+    
+    // --------------- Event Listeners------------------------
+
+    
+    // Add event listener to <form> element to listen for submit event
+    groceryForm.addEventListener('submit', addItem);
+    
+    // Listen for custom events from <ul>
+    itemsRepo.registerUpdateCallback(displayItems);
+    itemsRepo.registerUpdateCallback(mirrorToLocalStorage);
+    
+    // Listen for click on the close button X and name text from parent <ul>
+    list.addEventListener('click', function(e) {
+        const id = parseInt(e.target.value);
+        const name = e.target.innerHTML;
+        if(e.target.matches('button')) {
+            deleteItem(id);
+        }
+        if(e.target.matches('.text-element')) {
+            toggleText(name);
+        }
+    });
+    
+    // Listen for input to quantity input and update text input
+    list.addEventListener('input', function(e) {
+        const id = parseInt(e.target.name)
+        const name = e.target.innerHTML;
+        if(e.target.matches('input[type="number"]')) {
+            quantityUpdate(id);
+        }
+
+        if(e.target.matches('.update-input')) {
+            const text = e.target.value;
+            const name = e.target.name;
+            updateName(text, name);
+        }
+    });
+    
+    restoreFromLocalStorage();
+    
